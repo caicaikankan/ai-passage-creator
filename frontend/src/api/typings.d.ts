@@ -46,6 +46,7 @@ declare namespace API {
     topic?: string
     style?: string
     enabledImageMethods?: string[]
+    wordCount?: number
   }
 
   type ArticleQueryRequest = {

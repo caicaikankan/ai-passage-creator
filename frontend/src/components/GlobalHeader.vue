@@ -25,26 +25,9 @@
 
       <!-- 右侧：用户操作区域 -->
       <div class="header-right">
-        <div v-if="loginUserStore.loginUser.id" class="user-dropdown">
-          <a-dropdown>
-            <a-space class="user-info">
-              <a-avatar :src="loginUserStore.loginUser.userAvatar" :size="36" class="user-avatar" />
-              <span class="user-name">
-                {{ loginUserStore.loginUser.userName ?? '无名' }}
-              </span>
-            </a-space>
-            <template #overlay>
-              <a-menu class="dropdown-menu">
-                <a-menu-item @click="doLogout" class="dropdown-item">
-                  <LogoutOutlined />
-                  <span>退出登录</span>
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
-        </div>
-        <div v-else>
-          <RouterLink to="/user/login" class="login-btn">登录</RouterLink>
+        <div class="guest-info">
+          <a-avatar :size="36" class="user-avatar">G</a-avatar>
+          <span class="user-name">访客</span>
         </div>
       </div>
     </div>
@@ -52,21 +35,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { message } from 'ant-design-vue'
-import { useLoginUserStore } from '@/stores/loginUser.ts'
-import { userLogout } from '@/api/userController.ts'
 import {
-  LogoutOutlined,
   HomeOutlined,
   EditOutlined,
-  UnorderedListOutlined,
-  SettingOutlined,
-  BarChartOutlined
+  UnorderedListOutlined
 } from '@ant-design/icons-vue'
 
-const loginUserStore = useLoginUserStore()
 const router = useRouter()
 // 当前选中菜单
 const selectedKeys = ref<string[]>(['/'])
@@ -75,8 +51,8 @@ router.afterEach((to) => {
   selectedKeys.value = [to.path]
 })
 
-// 菜单配置项
-const originItems = [
+// 菜单配置项（简化版，移除管理菜单）
+const menuItems = [
   {
     key: '/',
     icon: HomeOutlined,
@@ -92,44 +68,7 @@ const originItems = [
     icon: UnorderedListOutlined,
     label: '历史',
   },
-  {
-    key: '/admin/userManage',
-    icon: SettingOutlined,
-    label: '管理',
-    admin: true,
-  },
-  {
-    key: '/admin/statistics',
-    icon: BarChartOutlined,
-    label: '数据',
-    admin: true,
-  },
 ]
-
-// 过滤菜单项
-const menuItems = computed(() => {
-  return originItems.filter((item) => {
-    if (item.admin) {
-      const loginUser = loginUserStore.loginUser
-      return loginUser && loginUser.userRole === 'admin'
-    }
-    return true
-  })
-})
-
-// 退出登录
-const doLogout = async () => {
-  const res = await userLogout()
-  if (res.data.code === 0) {
-    loginUserStore.setLoginUser({
-      userName: '未登录',
-    })
-    message.success('退出登录成功')
-    await router.push('/user/login')
-  } else {
-    message.error('退出登录失败，' + res.data.message)
-  }
-}
 </script>
 
 <style scoped>
@@ -234,75 +173,23 @@ const doLogout = async () => {
   gap: 16px;
 }
 
-.user-dropdown {
-  cursor: pointer;
-  height: 64px;
+.guest-info {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.user-info {
+  gap: 8px;
   padding: 6px 12px;
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-}
-
-.user-info:hover {
-  background: var(--color-background-secondary);
 }
 
 .user-avatar {
   border: 2px solid var(--color-border);
+  background: var(--color-background-secondary);
 }
 
 .user-name {
   font-weight: 500;
   color: var(--color-text);
   font-size: 14px;
-}
-
-.login-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  padding: 0 24px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  background: var(--gradient-primary);
-  border: none;
-  box-shadow: var(--shadow-green);
-  transition: all var(--transition-normal);
-  text-decoration: none;
-}
-
-.login-btn:hover {
-  color: white;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
-}
-
-.dropdown-menu {
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--color-border);
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  transition: all var(--transition-fast);
-}
-
-.dropdown-item:hover {
-  background: var(--color-background-secondary);
 }
 
 /* 响应式 */
